@@ -1,143 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>12 Minute Timer – Polo Countdown</title>
-  <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .card {
-      background: #020617;
-      padding: 2rem 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      width: 320px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
-    }
-
-    #timer {
-      font-size: 3rem;
-      font-weight: bold;
-      margin: 1.5rem 0;
-      letter-spacing: 2px;
-    }
-
-    select, button {
-      width: 100%;
-      padding: 0.6rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-      margin-top: 0.75rem;
-    }
-
-    select {
-      background: #1e293b;
-      color: #e5e7eb;
-    }
-
-    button {
-      background: #2563eb;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #475569;
-      cursor: not-allowed;
-    }
-
-    .footer {
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: #94a3b8;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12 Minute Timer</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        #timer { font-size: 6rem; margin-bottom: 20px; color: #333; }
+        .controls { display: flex; gap: 15px; align-items: center; }
+        select, button { padding: 10px 15px; font-size: 1rem; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
+        button:hover { background-color: #e0e0e0; }
+    </style>
 </head>
 <body>
-  <div class="card">
-    <h1>12 Minute Timer</h1>
-
-    <label for="audioSelect">Countdown Audio</label>
-    <select id="audioSelect"></select>
-    <small style="display:block;margin-top:4px;color:#94a3b8;">Loaded from /audio folder (GitHub Pages)</small>
-
     <div id="timer">12:00</div>
+    <div class="controls">
+        <select id="audioSelect">
+            <option value="polo_normal.mp3">Audio Clip 1</option>
+            <option value="audio2.mp3">Audio Clip 2</option>
+            <option value="audio3.mp3">Audio Clip 3</option>
+        </select>
+        <button id="startBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+    <audio id="audioPlayer"></audio>
 
-    <button id="startBtn">Start Timer</button>
-    <button id="resetBtn" disabled>Reset</button>
+    <script>
+        let timeLeft = 12 * 60;
+        let timerInterval = null;
+        const timerDisplay = document.getElementById('timer');
+        const audioSelect = document.getElementById('audioSelect');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
 
-    <div class="footer">Audio uses your browser's speech engine</div>
-  </div>
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
 
-  <script>
-    const TOTAL_TIME = 12 * 60; // 12 minutes in seconds
-    let remaining = TOTAL_TIME;
-    let interval = null;
+        startBtn.addEventListener('click', () => {
+            if (timerInterval) return;
+            
+            audioPlayer.src = audioSelect.value;
+            audioPlayer.play().catch(err => console.log("Audio playback error:", err));
 
-    const timerEl = document.getElementById('timer');
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const audioSelect = document.getElementById('audioSelect');
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    return;
+                }
+                timeLeft--;
+                updateDisplay();
+            }, 1000);
+        });
 
-    function formatTime(seconds) {
-      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-      const s = (seconds % 60).toString().padStart(2, '0');
-      return `${m}:${s}`;
-    }
-
-    let audioMap = {};
-    const audioEl = new Audio();
-
-    // ================================
-    // GITHUB PAGES AUDIO LOADING
-    // ================================
-    // Place audio files in /audio directory in your repo
-    // Example: /audio/polo_fast.mp3
-
-    const AUDIO_FILES = [
-      "polo_normal.mp3",
-      "polo_slow.mp3",
-      "polo_fast.mp3",
-      "polo_robot.mp3"
-    ];
-
-    function loadGitHubAudio() {
-      audioSelect.innerHTML = '';
-      audioMap = {};
-
-      AUDIO_FILES.forEach(file => {
-        const path = `audio/${file}`;
-        audioMap[file] = path;
-
-        const option = document.createElement('option');
-        option.value = file;
-        option.textContent = file.replace(/_/g, ' ').replace(/\.mp3|\.wav|\.ogg/, '');
-        audioSelect.appendChild(option);
-      });
-    }
-
-    loadGitHubAudio();
-
-    startBtn.addEventListener('click', startTimer);
-    resetBtn.addEventListener('click', resetTimer);
-
-    timerEl.textContent = formatTime(remaining);
-  </script>
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = 12 * 60;
+            updateDisplay();
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+        });
+    </script>
 </body>
 </html>
