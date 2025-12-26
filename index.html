@@ -1,70 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>12 Minute Timer</title>
-    <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
-        #timer { font-size: 6rem; margin-bottom: 20px; color: #333; }
-        .controls { display: flex; gap: 15px; align-items: center; }
-        select, button { padding: 10px 15px; font-size: 1rem; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
-        button:hover { background-color: #e0e0e0; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Polo Timer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: rgba(2, 6, 23, 0.85);
+      padding: 2.75rem;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      width: 420px;
+      text-align: center;
+      position: relative;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.75rem;
+      background: #1e293b;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95rem;
+      border: none;
+      color: #cbd5f5;
+    }
+
+    .tab.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    #timer {
+      font-size: 7.5rem;
+      font-weight: 700;
+      margin: 1.5rem 0;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    select, button {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      margin-top: 1rem;
+      font-size: 1rem;
+      transition: all 0.15s ease;
+    }
+
+    select {
+      padding: 0.85rem;
+      background: #1e293b;
+      color: #f8fafc;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 1.1rem;
+      font-weight: 500;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    button:hover:not(:disabled) {
+      background: transparent;
+      border-color: #2563eb;
+      color: #2563eb;
+      transform: none;
+      box-shadow: none;
+    }
+
+    button:active:not(:disabled) {
+      background: rgba(37, 99, 235, 0.1);
+    }
+
+    #resetBtn {
+      background: #334155;
+    }
+
+    #resetBtn:hover:not(:disabled) {
+      background: transparent;
+      border-color: #475569;
+      color: #f8fafc;
+      box-shadow: none;
+    }
+
+    button.secondary {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: transparent;
+      border-color: #cbd5f5;
+      color: #cbd5f5;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .row button {
+      width: 50%;
+    }
+
+    .audio-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .audio-row label {
+      font-size: 0.9rem;
+      color: #cbd5f5;
+      white-space: nowrap;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <div id="timer">12:00</div>
-    <div class="controls">
-        <select id="audioSelect">
-            <option value="polo_normal.mp3">Audio Clip 1</option>
-            <option value="audio2.mp3">Audio Clip 2</option>
-            <option value="audio3.mp3">Audio Clip 3</option>
-        </select>
-        <button id="startBtn">Start</button>
-        <button id="resetBtn">Reset</button>
+  <div class="card">
+
+    <!-- TIMER VIEW -->
+    <div id="timerView" class="view active">
+      <div id="timer">12:00</div>
+
+      <button id="startBtn">Start</button>
+      <button id="resetBtn" disabled>Reset</button>
     </div>
-    <audio id="audioPlayer"></audio>
 
-    <script>
-        let timeLeft = 12 * 60;
-        let timerInterval = null;
-        const timerDisplay = document.getElementById('timer');
-        const audioSelect = document.getElementById('audioSelect');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const startBtn = document.getElementById('startBtn');
-        const resetBtn = document.getElementById('resetBtn');
+    <!-- SETTINGS PANEL -->
+    <div id="settingsPanel" style="display:none; margin-top:1.5rem;">
+      <div class="row">
+        <button id="pauseBtn" class="secondary" disabled>Pause</button>
+        <button id="addBtn" class="secondary" disabled>+30 Seconds</button>
+      </div>
+      <div class="audio-row">
+        <select id="audioSelect" title="Start Sound"></select>
+        <select id="endAudioSelect" title="End Sound"></select>
+      </div>
+    </div>
+    </div>
 
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            timerDisplay.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
+    <button id="settingsBtn" aria-label="Settings" style="position:absolute; bottom:20px; right:20px; background:#1e293b; width:44px; height:44px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center;">⚙️</button>
 
-        startBtn.addEventListener('click', () => {
-            if (timerInterval) return;
-            
-            audioPlayer.src = audioSelect.value;
-            audioPlayer.play().catch(err => console.log("Audio playback error:", err));
+  </div>
 
-            timerInterval = setInterval(() => {
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    return;
-                }
-                timeLeft--;
-                updateDisplay();
-            }, 1000);
-        });
+  <script>
+    // ================================
+    // STATE
+    // ================================
+    const TOTAL_TIME = 12 * 60;
+    let remaining = TOTAL_TIME;
+    let interval = null;
+    let paused = false;
+    let oneMinutePlayed = false;
 
-        resetBtn.addEventListener('click', () => {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            timeLeft = 12 * 60;
-            updateDisplay();
-            audioPlayer.pause();
-            audioPlayer.currentTime = 0;
-        });
-    </script>
+    const timerEl = document.getElementById("timer");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const addBtn = document.getElementById("addBtn");
+    const audioSelect = document.getElementById("audioSelect");
+    const endAudioSelect = document.getElementById("endAudioSelect");
+
+    const audioEl = new Audio();
+    const notifyAudio = new Audio();
+
+    const START_AUDIO_FILES = [
+      "none",
+      "start_ai.mp3",
+      "start_racecar.mp3",
+      "start_fast.mp3",
+      "start_robot.mp3"
+    ];
+
+    const END_AUDIO_FILES = [
+      "none",
+      "end_foghorn.mp3"
+    ];
+
+    const ONE_MINUTE_AUDIO = "audio/one_minute_warning.mp3";
+
+    let audioMap = {};
+
+    function loadAudioFiles() {
+      audioSelect.innerHTML = "";
+      endAudioSelect.innerHTML = "";
+      audioMap = {};
+
+      START_AUDIO_FILES.forEach((file) => {
+        if (file !== "none") audioMap[file] = `audio/${file}`;
+        const option = document.createElement("option");
+        option.value = file;
+        option.textContent = file === "none" ? "No Start Sound" : file.replace(/_/g, " ").replace(/\.(mp3|wav|ogg)$/i, "");
+        if (file === "none") option.selected = true;
+        audioSelect.appendChild(option);
+      });
+
+      END_AUDIO_FILES.forEach((file) => {
+        if (file !== "none") audioMap[file] = `audio/${file}`;
+        const option = document.createElement("option");
+        option.value = file;
+        option.textContent = file === "none" ? "No End Sound" : file.replace(/_/g, " ").replace(/\.(mp3|wav|ogg)$/i, "");
+        if (file === "end_foghorn.mp3") option.selected = true;
+        endAudioSelect.appendChild(option);
+      });
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+      const s = (seconds % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function playOneMinuteWarning() {
+      if (oneMinutePlayed) return;
+      notifyAudio.src = ONE_MINUTE_AUDIO;
+      notifyAudio.play().catch(() => {});
+      oneMinutePlayed = true;
+    }
+
+    function playBuzzer() {
+      const key = endAudioSelect.value;
+      if (key === "none" || !audioMap[key]) return;
+      notifyAudio.src = audioMap[key];
+      notifyAudio.play().catch(() => {});
+    }
+
+    function tick() {
+      remaining--;
+      timerEl.textContent = formatTime(remaining);
+      if (remaining === 60) playOneMinuteWarning();
+      if (remaining <= 0) {
+        clearInterval(interval);
+        interval = null;
+        playBuzzer();
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        addBtn.disabled = true;
+      }
+    }
+
+    function beginCountdown() {
+      startBtn.disabled = true;
+      resetBtn.disabled = false;
+      pauseBtn.disabled = false;
+      addBtn.disabled = false;
+      paused = false;
+      pauseBtn.textContent = "Pause";
+      interval = setInterval(tick, 1000);
+    }
+
+    function playAudioThenStart() {
+      const key = audioSelect.value;
+      if (key === "none" || !audioMap[key]) return beginCountdown();
+      audioEl.src = audioMap[key];
+      audioEl.currentTime = 0;
+      audioEl.onended = () => beginCountdown();
+      audioEl.play().catch(() => beginCountdown());
+    }
+
+    function startTimer() {
+      if (interval) return;
+      oneMinutePlayed = false;
+      playAudioThenStart();
+    }
+
+    function pauseTimer() {
+      if (!interval && !paused) return;
+      if (!paused) {
+        clearInterval(interval);
+        interval = null;
+        paused = true;
+        pauseBtn.textContent = "Resume";
+      } else {
+        interval = setInterval(tick, 1000);
+        paused = false;
+        pauseBtn.textContent = "Pause";
+      }
+    }
+
+    function addTime() {
+      remaining += 30;
+      timerEl.textContent = formatTime(remaining);
+      if (remaining > 60) oneMinutePlayed = false;
+    }
+
+    function resetTimer() {
+      clearInterval(interval);
+      interval = null;
+      paused = false;
+      audioEl.pause();
+      notifyAudio.pause();
+      remaining = TOTAL_TIME;
+      oneMinutePlayed = false;
+      timerEl.textContent = formatTime(remaining);
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+      pauseBtn.disabled = true;
+      addBtn.disabled = true;
+      pauseBtn.textContent = "Pause";
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.view).classList.add('active');
+      });
+    });
+
+    // Settings toggle
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsPanel = document.getElementById("settingsPanel");
+
+    settingsBtn.addEventListener("click", () => {
+      settingsPanel.style.display = settingsPanel.style.display === "none" ? "block" : "none";
+    });
+
+    // Init
+    loadAudioFiles();
+    timerEl.textContent = formatTime(remaining);
+    startBtn.addEventListener("click", startTimer);
+    resetBtn.addEventListener("click", resetTimer);
+    pauseBtn.addEventListener("click", pauseTimer);
+    addBtn.addEventListener("click", addTime);
+  </script>
 </body>
 </html>
