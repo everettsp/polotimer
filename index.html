@@ -218,10 +218,13 @@
 
     const START_AUDIO_FILES = [
       "none",
-      "start_ai.mp3",
-      "start_racecar.mp3",
-      "start_fast.mp3",
-      "start_robot.mp3"
+      "racecar.mp3",
+      "colby_knowler.m4a",
+      "marty.m4a",
+      "mayo.m4a",
+      "mess_man.m4a",
+      "stephen_day.m4a",
+      "graham_downey.m4a"
     ];
 
     const END_AUDIO_FILES = [
@@ -242,7 +245,7 @@
         if (file !== "none") audioMap[file] = `audio/${file}`;
         const option = document.createElement("option");
         option.value = file;
-        option.textContent = file === "none" ? "No Start Sound" : file.replace(/_/g, " ").replace(/\.(mp3|wav|ogg)$/i, "");
+        option.textContent = file === "none" ? "No Start Sound" : file.replace(/_/g, " ").replace(/\.(mp3|wav|ogg|m4a)$/i, "");
         if (file === "none") option.selected = true;
         audioSelect.appendChild(option);
       });
@@ -251,7 +254,7 @@
         if (file !== "none") audioMap[file] = `audio/${file}`;
         const option = document.createElement("option");
         option.value = file;
-        option.textContent = file === "none" ? "No End Sound" : file.replace(/_/g, " ").replace(/\.(mp3|wav|ogg)$/i, "");
+        option.textContent = file === "none" ? "No End Sound" : file.replace(/_/g, " ").replace(/\.(mp3|wav|ogg|m4a)$/i, "");
         if (file === "end_foghorn.mp3") option.selected = true;
         endAudioSelect.appendChild(option);
       });
