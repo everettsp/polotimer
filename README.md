@@ -1,2 +1,3 @@
-# polotimer
-html 12 minute timer for bike polo
+a twelve minute timer for bike polo
+
+contains some audio
